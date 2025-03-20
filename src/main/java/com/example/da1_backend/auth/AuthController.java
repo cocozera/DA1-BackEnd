@@ -28,5 +28,20 @@ public class AuthController {
     public ResponseEntity<AuthResponse> verifyAccount(@RequestParam String email, @RequestParam String code) {
         return ResponseEntity.ok(authService.verifyAccount(email, code));
     }
+
+    @PostMapping("/recover-password")
+    public ResponseEntity<AuthResponse> recoverPassword(@RequestParam String email) {
+        AuthResponse response = authService.recoverPassword(email);
+        return ResponseEntity.ok(response);
+    }
+
+
+    @PostMapping("/change-password")
+    public ResponseEntity<AuthResponse> changePasswordWithCode(@RequestParam String email,
+                                                               @RequestParam String code,
+                                                               @RequestParam String newPassword) {
+        AuthResponse response = authService.changePasswordWithCode(email, code, newPassword);
+        return ResponseEntity.ok(response);
+    }
 }
 

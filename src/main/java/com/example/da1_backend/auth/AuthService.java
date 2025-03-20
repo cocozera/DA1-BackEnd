@@ -86,4 +86,39 @@ public class AuthService {
         Random random = new Random();
         return String.format("%06d", random.nextInt(1000000)); // Código de 6 dígitos
     }
+
+    public AuthResponse recoverPassword(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+
+        String resetCode = generateVerificationCode();
+        user.setVerificationCode(resetCode);
+        userRepository.save(user);
+
+
+        emailService.sendVerificationEmail(user.getEmail(), resetCode);
+
+        return new AuthResponse(null, "A password reset code has been sent to your email.");
+    }
+
+    public AuthResponse changePasswordWithCode(String email, String code, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+
+        if (user.getVerificationCode() == null || !user.getVerificationCode().equals(code)) {
+            throw new RuntimeException("Invalid verification code.");
+        }
+
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setVerificationCode(null);
+        userRepository.save(user);
+
+        return new AuthResponse(null, "Password changed successfully.");
+    }
+
+
+
 }
