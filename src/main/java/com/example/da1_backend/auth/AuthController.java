@@ -3,9 +3,7 @@ package com.example.da1_backend.auth;
 import com.example.da1_backend.auth.dto.AuthResponse;
 import com.example.da1_backend.auth.dto.LoginRequest;
 import com.example.da1_backend.auth.dto.RegisterRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,16 +12,21 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
+
+    @PostMapping("/verify")
+    public ResponseEntity<AuthResponse> verifyAccount(@RequestParam String email, @RequestParam String code) {
+        return ResponseEntity.ok(authService.verifyAccount(email, code));
+    }
 }
+
