@@ -33,11 +33,17 @@ public class RouteService {
             routeDTO.setId(route.getId());
             routeDTO.setAddress(route.getAddress());
             routeDTO.setStatus(route.getStatus().name());
-            routeDTO.setStartedAt(route.getStartedAt().toString());
-            routeDTO.setFinishedAt(route.getFinishedAt().toString());
+
+            // Verifica si startedAt es null antes de llamar a toString()
+            routeDTO.setStartedAt(route.getStartedAt() != null ? route.getStartedAt().toString() : null);
+
+            // Verifica si finishedAt es null antes de llamar a toString()
+            routeDTO.setFinishedAt(route.getFinishedAt() != null ? route.getFinishedAt().toString() : null);
+
             return routeDTO;
         }).collect(Collectors.toList());
     }
+
 
     // Obtener una ruta con todos sus detalles (solo un paquete asociado)
     public RouteDetailDTO getRouteDetails(Long routeId) {
@@ -49,8 +55,12 @@ public class RouteService {
         routeDetailDTO.setId(route.getId());
         routeDetailDTO.setAddress(route.getAddress());
         routeDetailDTO.setStatus(route.getStatus().name());
-        routeDetailDTO.setStartedAt(route.getStartedAt().toString());
-        routeDetailDTO.setFinishedAt(route.getFinishedAt().toString());
+
+        // Verifica si startedAt es null antes de llamar a toString()
+        routeDetailDTO.setStartedAt(route.getStartedAt() != null ? route.getStartedAt().toString() : null);
+
+        // Verifica si finishedAt es null antes de llamar a toString()
+        routeDetailDTO.setFinishedAt(route.getFinishedAt() != null ? route.getFinishedAt().toString() : null);
 
         // Asignar usuario
         if (route.getAssignedTo() != null) {
@@ -76,4 +86,5 @@ public class RouteService {
 
         return routeDetailDTO;
     }
+
 }
