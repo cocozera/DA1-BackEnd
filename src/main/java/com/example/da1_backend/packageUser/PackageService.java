@@ -24,7 +24,7 @@ public class PackageService {
         byte[] qrCode = QRCodeGenerator.generateQRCodeImage(routeInfo);
 
         // Aquí puedes asignar el QR generado al paquete
-        pkg.setQRcode(new String(qrCode));
+        pkg.setQRcode(qrCode);
 
         // Continuar con la creación del paquete
         return packageRepository.save(pkg);
@@ -47,6 +47,7 @@ public class PackageService {
                 .orElseThrow(() -> new ResourceNotFoundException("Package not found with id: " + packageId));
 
         // Actualiza los campos necesarios
+        existingPackage.setClient(packageDetails.getClient());
         existingPackage.setQRcode(packageDetails.getQRcode());
         existingPackage.setDepositAddress(packageDetails.getDepositAddress());
         existingPackage.setWeight(packageDetails.getWeight());

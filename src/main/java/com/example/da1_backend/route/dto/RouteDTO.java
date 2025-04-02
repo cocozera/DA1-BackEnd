@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class RouteDTO {
     private Long id;
-    private String client;
     private String address;
     private String status;
     private LocalDateTime startedAt;

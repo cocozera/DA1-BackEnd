@@ -21,8 +21,6 @@ public class Route {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String client;
-
     private String address;
 
     @Enumerated(EnumType.STRING)

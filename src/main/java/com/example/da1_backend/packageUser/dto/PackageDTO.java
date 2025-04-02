@@ -10,7 +10,8 @@ import lombok.NoArgsConstructor;
 
 public class PackageDTO {
     private Long id;
-    private String QRcode;
+    private String client;
+    private byte[] QRcode;
     private String depositAddress;
     private Double weight;
     private Double length;

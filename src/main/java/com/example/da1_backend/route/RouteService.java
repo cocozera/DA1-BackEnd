@@ -37,7 +37,6 @@ public class RouteService {
                 .orElseThrow(() -> new ResourceNotFoundException("Route not found with id: " + routeId));
 
         // Actualiza los campos necesarios
-        existingRoute.setClient(routeDetails.getClient());
         existingRoute.setAddress(routeDetails.getAddress());
         existingRoute.setStatus(routeDetails.getStatus());
         existingRoute.setStartedAt(routeDetails.getStartedAt());

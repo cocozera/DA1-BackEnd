@@ -16,7 +16,9 @@ public class Package {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String QRcode;
+    private String client;
+
+    private byte[] QRcode;
 
     private String depositAddress;
 
