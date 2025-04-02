@@ -1,8 +1,6 @@
 package com.example.da1_backend.auth;
 
-import com.example.da1_backend.auth.dto.RegisterRequest;
-import com.example.da1_backend.auth.dto.AuthResponse;
-import com.example.da1_backend.auth.dto.LoginRequest;
+import com.example.da1_backend.auth.dto.*;
 import com.example.da1_backend.user.User;
 import com.example.da1_backend.user.UserRepository;
 import com.example.da1_backend.util.JwtUtil;
@@ -63,15 +61,15 @@ public class AuthService {
         return new AuthResponse(token, "Login successful");
     }
 
-    public AuthResponse verifyAccount(String email, String code) {
-        User user = userRepository.findByEmail(email)
+    public AuthResponse verifyAccount(VerifyAccountRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.isEnabled()) {
             return new AuthResponse(null, "Account already verified.");
         }
 
-        if (!user.getVerificationCode().equals(code)) {
+        if (!user.getVerificationCode().equals(request.getCode())) {
             throw new RuntimeException("Invalid verification code.");
         }
 
@@ -87,8 +85,8 @@ public class AuthService {
         return String.format("%06d", random.nextInt(1000000)); // Código de 6 dígitos
     }
 
-    public AuthResponse recoverPassword(String email) {
-        User user = userRepository.findByEmail(email)
+    public AuthResponse recoverPassword(RecoverPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
 
@@ -102,17 +100,17 @@ public class AuthService {
         return new AuthResponse(null, "A password reset code has been sent to your email.");
     }
 
-    public AuthResponse changePasswordWithCode(String email, String code, String newPassword) {
-        User user = userRepository.findByEmail(email)
+    public AuthResponse changePasswordWithCode(ChangePasswordRequest changePasswordRequest) {
+        User user = userRepository.findByEmail(changePasswordRequest.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
 
-        if (user.getVerificationCode() == null || !user.getVerificationCode().equals(code)) {
+        if (user.getVerificationCode() == null || !user.getVerificationCode().equals(changePasswordRequest.getCode())) {
             throw new RuntimeException("Invalid verification code.");
         }
 
 
-        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
         user.setVerificationCode(null);
         userRepository.save(user);
 
