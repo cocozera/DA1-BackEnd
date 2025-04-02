@@ -19,5 +19,6 @@ public class GlobalExceptionHandler {
         });
         return new ResponseEntity<>(errors.toString(), HttpStatus.BAD_REQUEST);
     }
+
 }
 
