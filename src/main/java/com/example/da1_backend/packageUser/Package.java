@@ -6,14 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "routes")
+@Table(name = "package")
 public class Package {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,11 +28,8 @@ public class Package {
 
     private Double width;
 
-    @OneToOne
+    // Relación muchos a uno: un paquete pertenece a una ruta
+    @ManyToOne
     @JoinColumn(name = "route_id")
     private Route route;
-
-    @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Package> packages = new ArrayList<>();
-
 }

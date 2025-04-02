@@ -33,6 +33,6 @@ public class User {
 
     private String verificationCode;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "assignedTo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Route> routes;
 }
