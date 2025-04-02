@@ -3,6 +3,7 @@ package com.example.da1_backend.packageUser;
 
 import com.example.da1_backend.route.Route;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,12 +16,14 @@ public class PackageController {
 
     private final PackageService packageService;
 
-    /**
-     * Crear un nuevo Package.
-     */
-    @PostMapping
-    public ResponseEntity<Package> createPackage(@RequestBody Package pkg) {
-        return ResponseEntity.ok(packageService.createPackage(pkg));
+    @PostMapping("/create")
+    public ResponseEntity<Package> createPackage(@RequestBody Package pkg, @RequestParam Long routeId) {
+        try {
+            Package newPackage = packageService.createPackage(pkg, routeId);
+            return ResponseEntity.ok(newPackage);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     /**

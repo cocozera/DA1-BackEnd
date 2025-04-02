@@ -14,11 +14,22 @@ public class PackageService {
     private final RouteRepository routeRepository;
 
     /**
-     * Crea un nuevo Package en la base de datos.
+     * Crea un nuevo Package y genera su QR
      */
-    public Package createPackage(Package pkg) {
+    public Package createPackage(Package pkg, Long routeId) throws Exception {
+        // Generar la URL para la ruta, por ejemplo
+        String routeInfo = "http://localhost:8080/route-info?id=" + routeId;
+
+        // Llamar al generador de QR y obtener la imagen en bytes
+        byte[] qrCode = QRCodeGenerator.generateQRCodeImage(routeInfo);
+
+        // Aquí puedes asignar el QR generado al paquete
+        pkg.setQRcode(new String(qrCode));
+
+        // Continuar con la creación del paquete
         return packageRepository.save(pkg);
     }
+
 
     /**
      * Obtiene un Package por su ID.
