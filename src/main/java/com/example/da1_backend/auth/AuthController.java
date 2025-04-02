@@ -24,19 +24,19 @@ public class AuthController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<AuthResponse> verifyAccount(@Valid @RequestParam VerifyAccountRequest request) {
+    public ResponseEntity<AuthResponse> verifyAccount(@Valid @RequestBody VerifyAccountRequest request) {
         return ResponseEntity.ok(authService.verifyAccount(request));
     }
 
     @PostMapping("/recover-password")
-    public ResponseEntity<AuthResponse> recoverPassword(@Valid @RequestParam RecoverPasswordRequest request) {
+    public ResponseEntity<AuthResponse> recoverPassword(@Valid @RequestBody RecoverPasswordRequest request) {
         AuthResponse response = authService.recoverPassword(request);
         return ResponseEntity.ok(response);
     }
 
 
     @PostMapping("/change-password")
-    public ResponseEntity<AuthResponse> changePasswordWithCode(@Valid @RequestParam ChangePasswordRequest request) {
+    public ResponseEntity<AuthResponse> changePasswordWithCode(@Valid @RequestBody ChangePasswordRequest request) {
         AuthResponse response = authService.changePasswordWithCode(request);
         return ResponseEntity.ok(response);
     }
