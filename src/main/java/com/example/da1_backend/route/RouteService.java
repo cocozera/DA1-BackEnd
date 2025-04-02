@@ -1,72 +1,79 @@
 package com.example.da1_backend.route;
 
-import com.example.da1_backend.exception.ResourceNotFoundException;
+import com.example.da1_backend.packageUser.Package;
+import com.example.da1_backend.route.dto.RouteDTO;
+import com.example.da1_backend.route.dto.RouteDetailDTO;
+import com.example.da1_backend.packageUser.dto.PackageDTO;
 import com.example.da1_backend.user.User;
+import com.example.da1_backend.packageUser.PackageRepository;
 import com.example.da1_backend.user.UserRepository;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
-@AllArgsConstructor
 public class RouteService {
 
-    private final RouteRepository routeRepository;
-    private final UserRepository userRepository; // si necesitas asignar un usuario
-    // u otros repositorios que necesites
+    @Autowired
+    private RouteRepository routeRepository;
 
-    /**
-     * Crea una nueva Route en la base de datos.
-     */
-    public Route createRoute(Route route) {
-        return routeRepository.save(route);
+    @Autowired
+    private PackageRepository packageRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    // Obtener todas las rutas
+    public List<RouteDTO> getAllRoutes() {
+        List<Route> routes = routeRepository.findAll();
+        return routes.stream().map(route -> {
+            RouteDTO routeDTO = new RouteDTO();
+            routeDTO.setId(route.getId());
+            routeDTO.setAddress(route.getAddress());
+            routeDTO.setStatus(route.getStatus().name());
+            routeDTO.setStartedAt(route.getStartedAt().toString());
+            routeDTO.setFinishedAt(route.getFinishedAt().toString());
+            return routeDTO;
+        }).collect(Collectors.toList());
     }
 
-    /**
-     * Obtiene una Route por su ID.
-     */
-    public Route getRouteById(Long routeId) {
-        return routeRepository.findById(routeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Route not found with id: " + routeId));
-    }
-
-    /**
-     * Actualiza una Route existente.
-     */
-    public Route updateRoute(Long routeId, Route routeDetails) {
-        Route existingRoute = routeRepository.findById(routeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Route not found with id: " + routeId));
-
-        // Actualiza los campos necesarios
-        existingRoute.setAddress(routeDetails.getAddress());
-        existingRoute.setStatus(routeDetails.getStatus());
-        existingRoute.setStartedAt(routeDetails.getStartedAt());
-        existingRoute.setFinishedAt(routeDetails.getFinishedAt());
-
-        return routeRepository.save(existingRoute);
-    }
-
-    /**
-     * Elimina una Route de la base de datos.
-     */
-    public void deleteRoute(Long routeId) {
-        if (!routeRepository.existsById(routeId)) {
-            throw new ResourceNotFoundException("Route not found with id: " + routeId);
-        }
-        routeRepository.deleteById(routeId);
-    }
-
-    /**
-     * Asigna un usuario (repartidor, por ejemplo) a una Route.
-     */
-    public Route assignUserToRoute(Long routeId, Long userId) {
+    // Obtener una ruta con todos sus detalles (solo un paquete asociado)
+    public RouteDetailDTO getRouteDetails(Long routeId) {
         Route route = routeRepository.findById(routeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Route not found with id: " + routeId));
+                .orElseThrow(() -> new RuntimeException("Route not found"));
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        // Crear el DTO para la ruta
+        RouteDetailDTO routeDetailDTO = new RouteDetailDTO();
+        routeDetailDTO.setId(route.getId());
+        routeDetailDTO.setAddress(route.getAddress());
+        routeDetailDTO.setStatus(route.getStatus().name());
+        routeDetailDTO.setStartedAt(route.getStartedAt().toString());
+        routeDetailDTO.setFinishedAt(route.getFinishedAt().toString());
 
-        route.setAssignedTo(user);
-        return routeRepository.save(route);
+        // Asignar usuario
+        if (route.getAssignedTo() != null) {
+            User assignedUser = route.getAssignedTo();
+            routeDetailDTO.setAssignedUserId(assignedUser.getId());
+        }
+
+        // Asignar paquete (solo un paquete asociado a la ruta)
+        PackageDTO packageDTO = null;
+        if (route.getPackageItem() != null) {
+            Package packageItem = route.getPackageItem();  // Solo obtenemos el paquete asociado
+            packageDTO = new PackageDTO();
+            packageDTO.setId(packageItem.getId());
+            packageDTO.setReceptor(packageItem.getReceptor());
+            packageDTO.setDepositSector(packageItem.getDepositSector());
+            packageDTO.setWeight(packageItem.getWeight());
+            packageDTO.setHeight(packageItem.getHeight());
+            packageDTO.setLength(packageItem.getLength());
+            packageDTO.setWidth(packageItem.getWidth());
+        }
+
+        routeDetailDTO.setPackageDTO(packageDTO);  // Establecer el paquete en el DTO
+
+        return routeDetailDTO;
     }
-
 }

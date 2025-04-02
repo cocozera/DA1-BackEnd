@@ -1,54 +1,31 @@
 package com.example.da1_backend.route;
 
-import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import com.example.da1_backend.route.dto.RouteDTO;
+import com.example.da1_backend.route.dto.RouteDetailDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/routes")
-@AllArgsConstructor
+@RequestMapping("/routes")
 public class RouteController {
 
-    private final RouteService routeService;
+    @Autowired
+    private RouteService routeService;
 
-    /**
-     * Crear una nueva Route.
-     */
-    @PostMapping
-    public ResponseEntity<Route> createRoute(@RequestBody Route route) {
-        return ResponseEntity.ok(routeService.createRoute(route));
+    // Obtener todas las rutas
+    @GetMapping("/")
+    public List<RouteDTO> getAllRoutes() {
+        return routeService.getAllRoutes();
     }
 
-    /**
-     * Obtener una Route por su ID.
-     */
+    // Obtener una ruta con todos sus detalles (solo un paquete asociado)
     @GetMapping("/{routeId}")
-    public ResponseEntity<Route> getRouteById(@PathVariable Long routeId) {
-        return ResponseEntity.ok(routeService.getRouteById(routeId));
-    }
-
-    /**
-     * Actualizar una Route por su ID.
-     */
-    @PutMapping("/{routeId}")
-    public ResponseEntity<Route> updateRoute(@PathVariable Long routeId, @RequestBody Route routeDetails) {
-        return ResponseEntity.ok(routeService.updateRoute(routeId, routeDetails));
-    }
-
-    /**
-     * Eliminar una Route por su ID.
-     */
-    @DeleteMapping("/{routeId}")
-    public ResponseEntity<Void> deleteRoute(@PathVariable Long routeId) {
-        routeService.deleteRoute(routeId);
-        return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * Asignar un usuario (repartidor) a una Route.
-     */
-    @PostMapping("/{routeId}/assign-user/{userId}")
-    public ResponseEntity<Route> assignUserToRoute(@PathVariable Long routeId, @PathVariable Long userId) {
-        return ResponseEntity.ok(routeService.assignUserToRoute(routeId, userId));
+    public RouteDetailDTO getRouteDetails(@PathVariable Long routeId) {
+        return routeService.getRouteDetails(routeId);
     }
 }

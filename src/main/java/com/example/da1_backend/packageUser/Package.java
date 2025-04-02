@@ -1,6 +1,7 @@
 package com.example.da1_backend.packageUser;
 
 import com.example.da1_backend.route.Route;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,11 +17,11 @@ public class Package {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String client;
+    private String receptor;
 
     private byte[] QRcode;
 
-    private String depositAddress;
+    private String depositSector;
 
     private Double weight;
 
@@ -31,7 +32,8 @@ public class Package {
     private Double width;
 
     // Relación muchos a uno: un paquete pertenece a una ruta
-    @ManyToOne
+    @JsonBackReference  // Indica que esta es la referencia "reversa"
+    @OneToOne
     @JoinColumn(name = "route_id")
     private Route route;
 }

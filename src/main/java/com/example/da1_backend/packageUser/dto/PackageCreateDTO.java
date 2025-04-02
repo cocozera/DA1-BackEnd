@@ -5,12 +5,13 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PackageDTO {
-    private Long id;
+public class PackageCreateDTO {
     private String receptor;
     private String depositSector;
     private Double weight;
     private Double height;
     private Double length;
     private Double width;
+
+    private String routeAddress;
 }
