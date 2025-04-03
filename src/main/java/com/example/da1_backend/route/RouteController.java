@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/routes")
+@RequestMapping("/api/routes")
 public class RouteController {
 
     @Autowired
