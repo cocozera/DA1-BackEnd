@@ -10,6 +10,7 @@ import com.example.da1_backend.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,7 +28,7 @@ public class RouteService {
 
     // Obtener todas las rutas
     public List<RouteDTO> getAllRoutes() {
-        List<Route> routes = routeRepository.findAll();
+        List<Route> routes = routeRepository.findByStatus(Status.PENDING);
         return routes.stream().map(route -> {
             RouteDTO routeDTO = new RouteDTO();
             routeDTO.setId(route.getId());
@@ -85,6 +86,28 @@ public class RouteService {
         routeDetailDTO.setPackageDTO(packageDTO);  // Establecer el paquete en el DTO
 
         return routeDetailDTO;
+    }
+    public void assignUserToRoute(Long routeId, Long userId) {
+        Route route = routeRepository.findById(routeId)
+                .orElseThrow(() -> new RuntimeException("Route not found"));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        route.setAssignedTo(user);
+        route.setStartedAt(LocalDateTime.now());
+        route.setStatus(Status.IN_PROGRESS); // ✅ Cambia el estado
+
+        routeRepository.save(route);
+    }
+    public void completeRoute(Long routeId) {
+        Route route = routeRepository.findById(routeId)
+                .orElseThrow(() -> new RuntimeException("Route not found"));
+
+        route.setFinishedAt(LocalDateTime.now());
+        route.setStatus(Status.COMPLETED);
+
+        routeRepository.save(route);
     }
 
 }
