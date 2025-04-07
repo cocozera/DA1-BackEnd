@@ -9,4 +9,5 @@ import java.util.List;
 public interface RouteRepository extends JpaRepository<Route, Long> {
     // Métodos personalizados, por ejemplo:
     List<Route> findByStatus(Status status);
+    List<Route> findByAssignedTo_IdAndStatus(Long userId, Status status);
 }

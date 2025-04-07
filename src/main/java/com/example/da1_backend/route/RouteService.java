@@ -1,6 +1,7 @@
 package com.example.da1_backend.route;
 
 import com.example.da1_backend.packageUser.Package;
+import com.example.da1_backend.route.dto.CompletedRouteDTO;
 import com.example.da1_backend.route.dto.RouteDTO;
 import com.example.da1_backend.route.dto.RouteDetailDTO;
 import com.example.da1_backend.packageUser.dto.PackageDTO;
@@ -42,6 +43,33 @@ public class RouteService {
             routeDTO.setFinishedAt(route.getFinishedAt() != null ? route.getFinishedAt().toString() : null);
 
             return routeDTO;
+        }).collect(Collectors.toList());
+    }
+    public List<CompletedRouteDTO> getCompletedRoutesByUser(Long userId) {
+        List<Route> completedRoutes = routeRepository.findByAssignedTo_IdAndStatus(userId, Status.COMPLETED);
+        return completedRoutes.stream().map(route -> {
+            CompletedRouteDTO completedRouteDTO = new CompletedRouteDTO();
+            completedRouteDTO.setId(route.getId());
+            completedRouteDTO.setAddress(route.getAddress());
+            completedRouteDTO.setStartedAt(route.getStartedAt() != null ? route.getStartedAt().toString() : null);
+            completedRouteDTO.setFinishedAt(route.getFinishedAt() != null ? route.getFinishedAt().toString() : null);
+            completedRouteDTO.setStatus(route.getStatus().name());
+
+            // Agregar el paquete en el DTO
+            if (route.getPackageItem() != null) {
+                Package packageItem = route.getPackageItem();
+                PackageDTO packageDTO = new PackageDTO();
+                packageDTO.setId(packageItem.getId());
+                packageDTO.setReceptor(packageItem.getReceptor());
+                packageDTO.setDepositSector(packageItem.getDepositSector());
+                packageDTO.setWeight(packageItem.getWeight());
+                packageDTO.setHeight(packageItem.getHeight());
+                packageDTO.setLength(packageItem.getLength());
+                packageDTO.setWidth(packageItem.getWidth());
+                completedRouteDTO.setPackageDTO(packageDTO);
+            }
+
+            return completedRouteDTO;
         }).collect(Collectors.toList());
     }
 
