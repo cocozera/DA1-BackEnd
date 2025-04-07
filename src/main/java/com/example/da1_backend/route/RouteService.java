@@ -2,6 +2,7 @@ package com.example.da1_backend.route;
 
 import com.example.da1_backend.packageUser.Package;
 import com.example.da1_backend.route.dto.CompletedRouteDTO;
+import com.example.da1_backend.route.dto.PendingRouteDTO;
 import com.example.da1_backend.route.dto.RouteDTO;
 import com.example.da1_backend.route.dto.RouteDetailDTO;
 import com.example.da1_backend.packageUser.dto.PackageDTO;
@@ -136,6 +137,23 @@ public class RouteService {
         route.setStatus(Status.COMPLETED);
 
         routeRepository.save(route);
+    }
+    public List<PendingRouteDTO> getInProgressRoutesByUser(Long userId) {
+        List<Route> pendingRoutes = routeRepository.findByAssignedTo_IdAndStatus(userId, Status.IN_PROGRESS);
+
+        return pendingRoutes.stream().map(route -> {
+            PendingRouteDTO pendingRouteDTO = new PendingRouteDTO();
+            pendingRouteDTO.setId(route.getId());
+            pendingRouteDTO.setAddress(route.getAddress());
+
+            // Verifica si assignedTo es null antes de llamar a toString()
+            pendingRouteDTO.setAssignedUser(route.getAssignedTo() != null ? route.getAssignedTo().getName() : null);
+
+            pendingRouteDTO.setStartedAt(route.getStartedAt() != null ? route.getStartedAt().toString() : null);
+            pendingRouteDTO.setStatus(route.getStatus().name());
+
+            return pendingRouteDTO;
+        }).collect(Collectors.toList());
     }
 
 }

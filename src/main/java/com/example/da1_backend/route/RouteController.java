@@ -1,6 +1,7 @@
 package com.example.da1_backend.route;
 
 import com.example.da1_backend.route.dto.CompletedRouteDTO;
+import com.example.da1_backend.route.dto.PendingRouteDTO;
 import com.example.da1_backend.route.dto.RouteDTO;
 import com.example.da1_backend.route.dto.RouteDetailDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,11 @@ public class RouteController {
     @GetMapping("/{userId}/completed-routes")
     public List<CompletedRouteDTO> getCompletedRoutes(@PathVariable Long userId) {
         return routeService.getCompletedRoutesByUser(userId);
+    }
+
+    @GetMapping("/{userId}/inprogress-routes")
+    public List<PendingRouteDTO> getPendingRoutes(@PathVariable Long userId) {
+        return routeService.getInProgressRoutesByUser(userId);
     }
 
 }
