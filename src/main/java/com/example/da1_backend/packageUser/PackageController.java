@@ -8,6 +8,7 @@ import com.google.zxing.WriterException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +39,19 @@ public class PackageController {
     @PostMapping("/finishRoute/{packageId}")
     public void finishRoute(@PathVariable Long packageId) {
         packageService.finishRoute(packageId);
+    }
+
+    @GetMapping("/{id}/qrcode")
+    public ResponseEntity<byte[]> getQRCode(@PathVariable Long id) {
+        byte[] qrCode = packageService.getQRCodeByPackageId(id);
+
+        if (qrCode == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_PNG);
+        return new ResponseEntity<>(qrCode, headers, HttpStatus.OK);
     }
 
 }

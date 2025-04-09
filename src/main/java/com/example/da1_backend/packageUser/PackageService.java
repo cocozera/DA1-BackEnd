@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class PackageService {
@@ -104,5 +105,10 @@ public class PackageService {
         route.setStatus(Status.COMPLETED);  // Asumimos que la ruta pasa a estado 'COMPLETED' al finalizar
 
         routeRepository.save(route);  // Guardamos la ruta con el finishedAt actualizado
+    }
+
+    public byte[] getQRCodeByPackageId(Long id) {
+        Optional<Package> optionalPackage = packageRepository.findById(id);
+        return optionalPackage.map(Package::getQRcode).orElse(null);
     }
 }
