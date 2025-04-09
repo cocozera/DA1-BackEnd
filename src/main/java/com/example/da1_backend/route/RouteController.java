@@ -51,4 +51,10 @@ public class RouteController {
         return routeService.getInProgressRoutesByUser(userId);
     }
 
+    @PutMapping("/{id}/zone")
+    public ResponseEntity<RouteDTO> updateRouteZone(@PathVariable Long id, @RequestParam String zone) {
+        RouteDTO updatedRoute = routeService.updateZone(id, zone);
+        return ResponseEntity.ok(updatedRoute);
+    }
+
 }

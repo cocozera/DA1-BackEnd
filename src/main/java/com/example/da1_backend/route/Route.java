@@ -22,6 +22,8 @@ public class Route {
 
     private String address;
 
+    private String zone;
+
     @Enumerated(EnumType.STRING)
     private Status status;
 

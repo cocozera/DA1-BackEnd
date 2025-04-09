@@ -13,4 +13,5 @@ public class CompletedRouteDTO {
     private String finishedAt;
     private String status;
     private PackageDTO packageDTO;
+    private String zone;
 }

@@ -14,4 +14,5 @@ public class RouteDetailDTO {
     private String finishedAt;
     private Long assignedUserId;
     private PackageDTO packageDTO;  // Solo un único paquete asociado a la ruta
+    private String zone;
 }

@@ -11,4 +11,5 @@ public class InProgressRouteDTO {
     private String assignedUser;
     private String startedAt;
     private String status;
+    private String zone;
 }

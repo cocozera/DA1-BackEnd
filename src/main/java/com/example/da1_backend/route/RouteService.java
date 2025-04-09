@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,8 +23,6 @@ public class RouteService {
     @Autowired
     private RouteRepository routeRepository;
 
-    @Autowired
-    private PackageRepository packageRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -36,6 +35,7 @@ public class RouteService {
             routeDTO.setId(route.getId());
             routeDTO.setAddress(route.getAddress());
             routeDTO.setStatus(route.getStatus().name());
+            routeDTO.setZone(route.getZone());
 
             // Verifica si startedAt es null antes de llamar a toString()
             routeDTO.setStartedAt(route.getStartedAt() != null ? route.getStartedAt().toString() : null);
@@ -55,6 +55,7 @@ public class RouteService {
             completedRouteDTO.setStartedAt(route.getStartedAt() != null ? route.getStartedAt().toString() : null);
             completedRouteDTO.setFinishedAt(route.getFinishedAt() != null ? route.getFinishedAt().toString() : null);
             completedRouteDTO.setStatus(route.getStatus().name());
+            completedRouteDTO.setZone(route.getZone());
 
             // Agregar el paquete en el DTO
             if (route.getPackageItem() != null) {
@@ -85,6 +86,7 @@ public class RouteService {
         routeDetailDTO.setId(route.getId());
         routeDetailDTO.setAddress(route.getAddress());
         routeDetailDTO.setStatus(route.getStatus().name());
+        routeDetailDTO.setZone(route.getZone());
 
         // Verifica si startedAt es null antes de llamar a toString()
         routeDetailDTO.setStartedAt(route.getStartedAt() != null ? route.getStartedAt().toString() : null);
@@ -145,6 +147,7 @@ public class RouteService {
             InProgressRouteDTO inProgressRouteDTO = new InProgressRouteDTO();
             inProgressRouteDTO.setId(route.getId());
             inProgressRouteDTO.setAddress(route.getAddress());
+            inProgressRouteDTO.setZone(route.getZone());
 
             // Verifica si assignedTo es null antes de llamar a toString()
             inProgressRouteDTO.setAssignedUser(route.getAssignedTo() != null ? route.getAssignedTo().getName() : null);
@@ -154,6 +157,29 @@ public class RouteService {
 
             return inProgressRouteDTO;
         }).collect(Collectors.toList());
+    }
+
+    public RouteDTO updateZone(Long routeId, String newZone) {
+        Optional<Route> optionalRoute = routeRepository.findById(routeId);
+
+        if (optionalRoute.isEmpty()) {
+            throw new RuntimeException("Ruta no encontrada con ID: " + routeId);
+        }
+
+        Route route = optionalRoute.get();
+        route.setZone(newZone);
+        routeRepository.save(route);
+
+        // Mapear a DTO
+        RouteDTO dto = new RouteDTO();
+        dto.setId(route.getId());
+        dto.setAddress(route.getAddress());
+        dto.setZone(route.getZone());
+        dto.setStatus(route.getStatus().name());
+        dto.setStartedAt(route.getStartedAt() != null ? route.getStartedAt().toString() : null);
+        dto.setFinishedAt(route.getFinishedAt() != null ? route.getFinishedAt().toString() : null);
+
+        return dto;
     }
 
 }

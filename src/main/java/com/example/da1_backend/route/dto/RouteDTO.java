@@ -11,5 +11,6 @@ public class RouteDTO {
     private String status;
     private String startedAt;
     private String finishedAt;
+    private String zone;
 }
 
