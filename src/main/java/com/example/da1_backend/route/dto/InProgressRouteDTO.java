@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PendingRouteDTO {
+public class InProgressRouteDTO {
     private Long id;
     private String address;
     private String assignedUser;
