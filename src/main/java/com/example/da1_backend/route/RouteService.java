@@ -2,7 +2,7 @@ package com.example.da1_backend.route;
 
 import com.example.da1_backend.packageUser.Package;
 import com.example.da1_backend.route.dto.CompletedRouteDTO;
-import com.example.da1_backend.route.dto.PendingRouteDTO;
+import com.example.da1_backend.route.dto.InProgressRouteDTO;
 import com.example.da1_backend.route.dto.RouteDTO;
 import com.example.da1_backend.route.dto.RouteDetailDTO;
 import com.example.da1_backend.packageUser.dto.PackageDTO;
@@ -138,21 +138,21 @@ public class RouteService {
 
         routeRepository.save(route);
     }
-    public List<PendingRouteDTO> getInProgressRoutesByUser(Long userId) {
+    public List<InProgressRouteDTO> getInProgressRoutesByUser(Long userId) {
         List<Route> pendingRoutes = routeRepository.findByAssignedTo_IdAndStatus(userId, Status.IN_PROGRESS);
 
         return pendingRoutes.stream().map(route -> {
-            PendingRouteDTO pendingRouteDTO = new PendingRouteDTO();
-            pendingRouteDTO.setId(route.getId());
-            pendingRouteDTO.setAddress(route.getAddress());
+            InProgressRouteDTO inProgressRouteDTO = new InProgressRouteDTO();
+            inProgressRouteDTO.setId(route.getId());
+            inProgressRouteDTO.setAddress(route.getAddress());
 
             // Verifica si assignedTo es null antes de llamar a toString()
-            pendingRouteDTO.setAssignedUser(route.getAssignedTo() != null ? route.getAssignedTo().getName() : null);
+            inProgressRouteDTO.setAssignedUser(route.getAssignedTo() != null ? route.getAssignedTo().getName() : null);
 
-            pendingRouteDTO.setStartedAt(route.getStartedAt() != null ? route.getStartedAt().toString() : null);
-            pendingRouteDTO.setStatus(route.getStatus().name());
+            inProgressRouteDTO.setStartedAt(route.getStartedAt() != null ? route.getStartedAt().toString() : null);
+            inProgressRouteDTO.setStatus(route.getStatus().name());
 
-            return pendingRouteDTO;
+            return inProgressRouteDTO;
         }).collect(Collectors.toList());
     }
 
