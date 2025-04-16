@@ -107,12 +107,19 @@ public class RouteService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RouteException(RouteException.USER_NOT_FOUND));
 
+        // --- Nueva comprobación ---
+        if (routeRepository.existsByAssignedToIdAndStatus(userId, Status.IN_PROGRESS)) {
+            throw new RouteException(RouteException.USER_HAS_ROUTE_IN_PROGRESS);
+        }
+
+        // Si no tiene ninguna en progreso, asignamos la ruta
         route.setAssignedTo(user);
         route.setStartedAt(LocalDateTime.now());
         route.setStatus(Status.IN_PROGRESS);
 
         routeRepository.save(route);
     }
+
 
     public void completeRoute(Long routeId) {
         Route route = routeRepository.findById(routeId)
