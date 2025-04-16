@@ -1,5 +1,6 @@
 package com.example.da1_backend.user;
 
+import com.example.da1_backend.exception.UserException;
 import com.example.da1_backend.user.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,7 @@ public class UserService {
 
     public UserDTO getCurrentUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + userId));
+                .orElseThrow(() -> new UserException(UserException.USER_NOT_FOUND_WITH_ID + userId));
         return mapToDTO(user);
     }
 
@@ -25,5 +26,4 @@ public class UserService {
                 user.isEnabled()
         );
     }
-
 }

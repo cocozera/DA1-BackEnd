@@ -7,6 +7,7 @@ import com.example.da1_backend.route.Status;
 import com.example.da1_backend.route.RouteRepository;
 import com.example.da1_backend.user.User;
 import com.example.da1_backend.user.UserRepository;
+import com.example.da1_backend.exception.PackageException;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -31,84 +32,76 @@ public class PackageService {
     @Autowired
     private UserRepository userRepository;
 
-    // Método para crear un paquete sin asignar el usuario
-    public Package createPackage(PackageCreateDTO packageCreateDTO) throws WriterException, IOException {
-        // Paso 1: Crear la ruta
-        Route route = new Route();
-        route.setAddress(packageCreateDTO.getRouteAddress());
-        route.setStatus(Status.PENDING);
-
-        // Paso 2: Crear el paquete
-        Package newPackage = new Package();
-        newPackage.setReceptor(packageCreateDTO.getReceptor());
-        newPackage.setDepositSector(packageCreateDTO.getDepositSector());
-        newPackage.setWeight(packageCreateDTO.getWeight());
-        newPackage.setHeight(packageCreateDTO.getHeight());
-        newPackage.setLength(packageCreateDTO.getLength());
-        newPackage.setWidth(packageCreateDTO.getWidth());
-
-        // Establecer la relación entre el paquete y la ruta
-        newPackage.setRoute(route);
-        route.setPackageItem(newPackage);  // Enlazar el paquete con la ruta
-
-        // Guardar la ruta y el paquete
-        route = routeRepository.save(route);  // Guardar la ruta
-        newPackage = packageRepository.save(newPackage);  // Guardar el paquete
-
-        // Paso 3: Generar el QR
-        byte[] qrCode = generateQRCode(route.getId().toString());  // Usamos la ID de la ruta en el QR
-        newPackage.setQRcode(qrCode);
-
-        // Guardar el paquete
-        return packageRepository.save(newPackage);
-    }
-
-    // Método para generar un QR a partir de un texto
-    private byte[] generateQRCode(String text) throws WriterException, IOException {
-        QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    public Package createPackage(PackageCreateDTO packageCreateDTO) {
         try {
-            com.google.zxing.common.BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 200, 200);
-            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", baos);
-        } catch (WriterException e) {
-            throw new WriterException();
-        }
+            Route route = new Route();
+            route.setAddress(packageCreateDTO.getRouteAddress());
+            route.setStatus(Status.PENDING);
 
-        return baos.toByteArray();
+            Package newPackage = new Package();
+            newPackage.setReceptor(packageCreateDTO.getReceptor());
+            newPackage.setDepositSector(packageCreateDTO.getDepositSector());
+            newPackage.setWeight(packageCreateDTO.getWeight());
+            newPackage.setHeight(packageCreateDTO.getHeight());
+            newPackage.setLength(packageCreateDTO.getLength());
+            newPackage.setWidth(packageCreateDTO.getWidth());
+
+            newPackage.setRoute(route);
+            route.setPackageItem(newPackage);
+
+            route = routeRepository.save(route);
+            newPackage = packageRepository.save(newPackage);
+
+            byte[] qrCode = generateQRCode(route.getId().toString());
+            newPackage.setQRcode(qrCode);
+
+            return packageRepository.save(newPackage);
+        } catch (Exception e) {
+            throw new PackageException(PackageException.QR_GENERATION_FAILED);
+        }
     }
 
-    public void assignUserToPackage(AssignUserToPackageDTO assignUserToPackageDTO) {
-        Package packageToAssign = packageRepository.findById(assignUserToPackageDTO.getPackageId())
-                .orElseThrow(() -> new RuntimeException("Package not found"));
+    private byte[] generateQRCode(String text) {
+        try {
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            var bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 200, 200);
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", baos);
+            return baos.toByteArray();
+        } catch (Exception e) {
+            throw new PackageException(PackageException.QR_GENERATION_FAILED);
+        }
+    }
 
-        User user = userRepository.findById(assignUserToPackageDTO.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public void assignUserToPackage(AssignUserToPackageDTO dto) {
+        Package packageToAssign = packageRepository.findById(dto.getPackageId())
+                .orElseThrow(() -> new PackageException(PackageException.PACKAGE_NOT_FOUND));
 
-        // Asignamos el usuario a la ruta y establecemos startedAt
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new PackageException(PackageException.USER_NOT_FOUND));
+
         Route route = packageToAssign.getRoute();
         route.setAssignedTo(user);
-        route.setStartedAt(LocalDateTime.now());  // Establecemos el startedAt en el momento de la asignación
+        route.setStartedAt(LocalDateTime.now());
 
-        routeRepository.save(route);  // Guardamos la ruta con la asignación y el startedAt actualizado
-
-        packageRepository.save(packageToAssign);  // Guardamos el paquete con la nueva asignación
+        routeRepository.save(route);
+        packageRepository.save(packageToAssign);
     }
 
-    // Método para finalizar la ruta y marcar finishedAt
     public void finishRoute(Long packageId) {
         Package packageToFinish = packageRepository.findById(packageId)
-                .orElseThrow(() -> new RuntimeException("Package not found"));
+                .orElseThrow(() -> new PackageException(PackageException.PACKAGE_NOT_FOUND));
 
         Route route = packageToFinish.getRoute();
-        route.setFinishedAt(LocalDateTime.now());  // Establecemos el finishedAt cuando la ruta se finaliza
+        route.setFinishedAt(LocalDateTime.now());
+        route.setStatus(Status.COMPLETED);
 
-        route.setStatus(Status.COMPLETED);  // Asumimos que la ruta pasa a estado 'COMPLETED' al finalizar
-
-        routeRepository.save(route);  // Guardamos la ruta con el finishedAt actualizado
+        routeRepository.save(route);
     }
 
     public byte[] getQRCodeByPackageId(Long id) {
-        Optional<Package> optionalPackage = packageRepository.findById(id);
-        return optionalPackage.map(Package::getQRcode).orElse(null);
+        return packageRepository.findById(id)
+                .map(Package::getQRcode)
+                .orElseThrow(() -> new PackageException(PackageException.PACKAGE_NOT_FOUND));
     }
 }

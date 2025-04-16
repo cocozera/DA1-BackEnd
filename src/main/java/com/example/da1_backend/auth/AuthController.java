@@ -1,6 +1,7 @@
 package com.example.da1_backend.auth;
 
 import com.example.da1_backend.auth.dto.*;
+import com.example.da1_backend.exception.AuthException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,17 @@ public class AuthController {
     public ResponseEntity<AuthResponse> changePasswordWithCode(@Valid @RequestBody ChangePasswordRequest request) {
         AuthResponse response = authService.changePasswordWithCode(request);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/validate")
+    public ResponseEntity<String> validateToken(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new AuthException(AuthException.TOKEN_INVALID);
+        }
+
+        String token = authHeader.substring(7);
+        authService.validateToken(token);
+        return ResponseEntity.ok("Token is valid");
     }
 }
 

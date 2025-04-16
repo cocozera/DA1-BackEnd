@@ -5,10 +5,12 @@ import com.example.da1_backend.user.User;
 import com.example.da1_backend.user.UserRepository;
 import com.example.da1_backend.util.JwtUtil;
 import com.example.da1_backend.email.EmailService;
+import com.example.da1_backend.exception.AuthException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.util.Random;
 
 @Service
@@ -22,10 +24,9 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email is already taken");
+            throw new AuthException(AuthException.EMAIL_ALREADY_TAKEN);
         }
 
-        // Generar código de verificación aleatorio
         String verificationCode = generateVerificationCode();
 
         User user = new User();
@@ -38,23 +39,21 @@ public class AuthService {
 
         userRepository.save(user);
 
-        // Enviar email con el código de verificación
         emailService.sendVerificationEmail(user.getEmail(), verificationCode);
 
-        // Se retorna el userId en el AuthResponse (token es null en registro)
         return new AuthResponse(null, user.getId(), "User registered successfully. Check your email for verification code.");
     }
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AuthException(AuthException.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new AuthException(AuthException.INVALID_CREDENTIALS);
         }
 
         if (!user.isEnabled()) {
-            throw new RuntimeException("Account is not verified. Check your email.");
+            throw new AuthException(AuthException.ACCOUNT_NOT_VERIFIED);
         }
 
         String token = jwtUtil.generateAccessToken(user);
@@ -63,18 +62,18 @@ public class AuthService {
 
     public AuthResponse verifyAccount(VerifyAccountRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AuthException(AuthException.USER_NOT_FOUND));
 
         if (user.isEnabled()) {
             return new AuthResponse(null, user.getId(), "Account already verified.");
         }
 
         if (!user.getVerificationCode().equals(request.getCode())) {
-            throw new RuntimeException("Invalid verification code.");
+            throw new AuthException(AuthException.INVALID_VERIFICATION_CODE);
         }
 
         user.setEnabled(true);
-        user.setVerificationCode(null); // Eliminar el código después de activación
+        user.setVerificationCode(null);
         userRepository.save(user);
 
         return new AuthResponse(null, user.getId(), "Account verified successfully.");
@@ -82,12 +81,12 @@ public class AuthService {
 
     private String generateVerificationCode() {
         Random random = new Random();
-        return String.format("%06d", random.nextInt(1000000)); // Código de 6 dígitos
+        return String.format("%06d", random.nextInt(1000000));
     }
 
     public AuthResponse recoverPassword(RecoverPasswordRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AuthException(AuthException.USER_NOT_FOUND));
 
         String resetCode = generateVerificationCode();
         user.setVerificationCode(resetCode);
@@ -100,10 +99,10 @@ public class AuthService {
 
     public AuthResponse changePasswordWithCode(ChangePasswordRequest changePasswordRequest) {
         User user = userRepository.findByEmail(changePasswordRequest.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AuthException(AuthException.USER_NOT_FOUND));
 
         if (user.getVerificationCode() == null || !user.getVerificationCode().equals(changePasswordRequest.getCode())) {
-            throw new RuntimeException("Invalid verification code.");
+            throw new AuthException(AuthException.INVALID_VERIFICATION_CODE);
         }
 
         user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
@@ -112,4 +111,15 @@ public class AuthService {
 
         return new AuthResponse(null, user.getId(), "Password changed successfully.");
     }
+
+    public void validateToken(String token) {
+        try {
+            if (jwtUtil.isTokenExpired(token)) {
+                throw new AuthException(AuthException.TOKEN_EXPIRED);
+            }
+        } catch (Exception e) {
+            throw new AuthException(AuthException.TOKEN_INVALID);
+        }
+    }
+
 }
