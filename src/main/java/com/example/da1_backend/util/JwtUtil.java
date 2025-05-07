@@ -29,6 +29,10 @@ public class JwtUtil {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public Long extractUserId(String token) {
+        return Long.parseLong(extractClaim(token, Claims::getSubject)); // Suponiendo que el userId está en el subject
+    }
+
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }

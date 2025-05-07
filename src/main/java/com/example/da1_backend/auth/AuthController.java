@@ -2,6 +2,9 @@ package com.example.da1_backend.auth;
 
 import com.example.da1_backend.auth.dto.*;
 import com.example.da1_backend.exception.AuthException;
+import com.example.da1_backend.user.UserService;
+import com.example.da1_backend.user.dto.UserDTO;
+import com.example.da1_backend.util.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +16,10 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+
+    private final JwtUtil jwtUtil;
+
+    private final UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -51,6 +58,18 @@ public class AuthController {
         String token = authHeader.substring(7);
         authService.validateToken(token);
         return ResponseEntity.ok("Token is valid");
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> getMe(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new AuthException(AuthException.TOKEN_INVALID);
+        }
+
+        String token = authHeader.substring(7);
+        Long userId = jwtUtil.extractUserId(token); // Extraer el userId del token
+        UserDTO userDTO = userService.getCurrentUser(userId);
+        return ResponseEntity.ok(userDTO);
     }
 }
 

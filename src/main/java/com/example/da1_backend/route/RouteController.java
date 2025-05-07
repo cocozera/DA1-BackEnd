@@ -4,6 +4,7 @@ import com.example.da1_backend.route.dto.CompletedRouteDTO;
 import com.example.da1_backend.route.dto.InProgressRouteDTO;
 import com.example.da1_backend.route.dto.RouteDTO;
 import com.example.da1_backend.route.dto.RouteDetailDTO;
+import com.example.da1_backend.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,9 @@ public class RouteController {
 
     @Autowired
     private RouteService routeService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     // Obtener todas las rutas
     @GetMapping("/")
@@ -41,13 +45,17 @@ public class RouteController {
         return ResponseEntity.ok("Route completed successfully.");
     }
 
-    @GetMapping("/{userId}/completed-routes")
-    public List<CompletedRouteDTO> getCompletedRoutes(@PathVariable Long userId) {
+    @GetMapping("/completed-routes")
+    public List<CompletedRouteDTO> getCompletedRoutes(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        Long userId = jwtUtil.extractUserId(token); // Extraer el userId del token
         return routeService.getCompletedRoutesByUser(userId);
     }
 
-    @GetMapping("/{userId}/inprogress-routes")
-    public List<InProgressRouteDTO> getInProgressRoutes(@PathVariable Long userId) {
+    @GetMapping("/inprogress-routes")
+    public List<InProgressRouteDTO> getInProgressRoutes(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        Long userId = jwtUtil.extractUserId(token); // Extraer el userId del token
         return routeService.getInProgressRoutesByUser(userId);
     }
 
