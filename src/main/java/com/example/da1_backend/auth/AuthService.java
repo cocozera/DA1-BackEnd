@@ -41,7 +41,7 @@ public class AuthService {
 
         emailService.sendVerificationEmail(user.getEmail(), verificationCode);
 
-        return new AuthResponse(null, user.getId(), "User registered successfully. Check your email for verification code.");
+        return new AuthResponse(null, "User registered successfully. Check your email for verification code.");
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -57,7 +57,7 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateAccessToken(user);
-        return new AuthResponse(token, user.getId(), "Login successful");
+        return new AuthResponse(token,"Login successful");
     }
 
     public AuthResponse verifyAccount(VerifyAccountRequest request) {
@@ -65,7 +65,7 @@ public class AuthService {
                 .orElseThrow(() -> new AuthException(AuthException.USER_NOT_FOUND));
 
         if (user.isEnabled()) {
-            return new AuthResponse(null, user.getId(), "Account already verified.");
+            return new AuthResponse(null, "Account already verified.");
         }
 
         if (!user.getVerificationCode().equals(request.getCode())) {
@@ -76,7 +76,7 @@ public class AuthService {
         user.setVerificationCode(null);
         userRepository.save(user);
 
-        return new AuthResponse(null, user.getId(), "Account verified successfully.");
+        return new AuthResponse(null, "Account verified successfully.");
     }
 
     private String generateVerificationCode() {
@@ -94,7 +94,7 @@ public class AuthService {
 
         emailService.sendVerificationEmail(user.getEmail(), resetCode);
 
-        return new AuthResponse(null, user.getId(), "A password reset code has been sent to your email.");
+        return new AuthResponse(null, "A password reset code has been sent to your email.");
     }
 
     public AuthResponse changePasswordWithCode(ChangePasswordRequest changePasswordRequest) {
@@ -109,7 +109,7 @@ public class AuthService {
         user.setVerificationCode(null);
         userRepository.save(user);
 
-        return new AuthResponse(null, user.getId(), "Password changed successfully.");
+        return new AuthResponse(null,"Password changed successfully.");
     }
 
     public void validateToken(String token) {
