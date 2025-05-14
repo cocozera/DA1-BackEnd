@@ -30,7 +30,8 @@ public class JwtUtil {
     }
 
     public Long extractUserId(String token) {
-        return Long.parseLong(extractClaim(token, Claims::getSubject)); // Suponiendo que el userId está en el subject
+        Claims claims = extractAllClaims(token);
+        return claims.get("userId", Long.class); // ✅ lo sacás del claim, no del subject
     }
 
     public Date extractExpiration(String token) {
@@ -52,9 +53,9 @@ public class JwtUtil {
 
     public String generateAccessToken(User user) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", user.getId());
         return createToken(claims, user.getEmail(), ACCESS_TOKEN_VALIDITY_SECONDS);
     }
-
 
     public String generateRefreshToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
