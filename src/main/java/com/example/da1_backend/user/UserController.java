@@ -15,9 +15,11 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/me")
-    public ResponseEntity<UserDTO> getMe(@RequestParam("userId") Long userId) {
-        UserDTO userDTO = userService.getCurrentUser(userId);
+    public ResponseEntity<UserDTO> getMe(Principal principal) {
+        String email = principal.getName(); // El `subject` del JWT
+        UserDTO userDTO = userService.getCurrentUserByEmail(email);
         return ResponseEntity.ok(userDTO);
     }
+
 
 }

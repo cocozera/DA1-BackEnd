@@ -40,33 +40,38 @@ public class RouteService {
         }).collect(Collectors.toList());
     }
 
-    public List<CompletedRouteDTO> getCompletedRoutesByUser(Long userId) {
-        List<Route> completedRoutes = routeRepository.findByAssignedTo_IdAndStatus(userId, Status.COMPLETED);
-        return completedRoutes.stream().map(route -> {
-            CompletedRouteDTO dto = new CompletedRouteDTO();
-            dto.setId(route.getId());
-            dto.setAddress(route.getAddress());
-            dto.setStartedAt(route.getStartedAt() != null ? route.getStartedAt().toString() : null);
-            dto.setFinishedAt(route.getFinishedAt() != null ? route.getFinishedAt().toString() : null);
-            dto.setStatus(route.getStatus().name());
-            dto.setZone(route.getZone());
+    public void assignUserToRoute(Long routeId, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RouteException(RouteException.USER_NOT_FOUND));
 
-            if (route.getPackageItem() != null) {
-                Package pkg = route.getPackageItem();
-                PackageDTO pkgDTO = new PackageDTO();
-                pkgDTO.setId(pkg.getId());
-                pkgDTO.setReceptor(pkg.getReceptor());
-                pkgDTO.setDepositSector(pkg.getDepositSector());
-                pkgDTO.setWeight(pkg.getWeight());
-                pkgDTO.setHeight(pkg.getHeight());
-                pkgDTO.setLength(pkg.getLength());
-                pkgDTO.setWidth(pkg.getWidth());
-                dto.setPackageDTO(pkgDTO);
-            }
+        if (routeRepository.existsByAssignedToIdAndStatus(user.getId(), Status.IN_PROGRESS)) {
+            throw new RouteException(RouteException.USER_HAS_ROUTE_IN_PROGRESS);
+        }
 
-            return dto;
-        }).collect(Collectors.toList());
+        Route route = routeRepository.findById(routeId)
+                .orElseThrow(() -> new RouteException(RouteException.ROUTE_NOT_FOUND));
+
+        route.setAssignedTo(user);
+        route.setStartedAt(LocalDateTime.now());
+        route.setStatus(Status.IN_PROGRESS);
+
+        routeRepository.save(route);
     }
+
+    public List<CompletedRouteDTO> getCompletedRoutesByUserEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RouteException(RouteException.USER_NOT_FOUND));
+        return getCompletedRoutesByUser(user.getId());
+    }
+
+    public List<InProgressRouteDTO> getInProgressRoutesByUserEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RouteException(RouteException.USER_NOT_FOUND));
+        return getInProgressRoutesByUser(user.getId());
+    }
+
+
+
 
     public RouteDetailDTO getRouteDetails(Long routeId) {
         Route route = routeRepository.findById(routeId)
@@ -100,26 +105,6 @@ public class RouteService {
         return dto;
     }
 
-    public void assignUserToRoute(Long routeId, Long userId) {
-        Route route = routeRepository.findById(routeId)
-                .orElseThrow(() -> new RouteException(RouteException.ROUTE_NOT_FOUND));
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RouteException(RouteException.USER_NOT_FOUND));
-
-        // --- Nueva comprobación ---
-        if (routeRepository.existsByAssignedToIdAndStatus(userId, Status.IN_PROGRESS)) {
-            throw new RouteException(RouteException.USER_HAS_ROUTE_IN_PROGRESS);
-        }
-
-        // Si no tiene ninguna en progreso, asignamos la ruta
-        route.setAssignedTo(user);
-        route.setStartedAt(LocalDateTime.now());
-        route.setStatus(Status.IN_PROGRESS);
-
-        routeRepository.save(route);
-    }
-
 
     public void completeRoute(Long routeId) {
         Route route = routeRepository.findById(routeId)
@@ -129,20 +114,6 @@ public class RouteService {
         route.setStatus(Status.COMPLETED);
 
         routeRepository.save(route);
-    }
-
-    public List<InProgressRouteDTO> getInProgressRoutesByUser(Long userId) {
-        List<Route> routes = routeRepository.findByAssignedTo_IdAndStatus(userId, Status.IN_PROGRESS);
-        return routes.stream().map(route -> {
-            InProgressRouteDTO dto = new InProgressRouteDTO();
-            dto.setId(route.getId());
-            dto.setAddress(route.getAddress());
-            dto.setZone(route.getZone());
-            dto.setAssignedUser(route.getAssignedTo() != null ? route.getAssignedTo().getName() : null);
-            dto.setStartedAt(route.getStartedAt() != null ? route.getStartedAt().toString() : null);
-            dto.setStatus(route.getStatus().name());
-            return dto;
-        }).collect(Collectors.toList());
     }
 
     public RouteDTO updateZone(Long routeId, String newZone) {
@@ -161,5 +132,47 @@ public class RouteService {
         dto.setFinishedAt(route.getFinishedAt() != null ? route.getFinishedAt().toString() : null);
 
         return dto;
+    }
+
+    private List<CompletedRouteDTO> getCompletedRoutesByUser(Long userId) {
+        List<Route> completedRoutes = routeRepository.findByAssignedTo_IdAndStatus(userId, Status.COMPLETED);
+        return completedRoutes.stream().map(route -> {
+            CompletedRouteDTO dto = new CompletedRouteDTO();
+            dto.setId(route.getId());
+            dto.setAddress(route.getAddress());
+            dto.setStartedAt(route.getStartedAt() != null ? route.getStartedAt().toString() : null);
+            dto.setFinishedAt(route.getFinishedAt() != null ? route.getFinishedAt().toString() : null);
+            dto.setStatus(route.getStatus().name());
+            dto.setZone(route.getZone());
+
+            if (route.getPackageItem() != null) {
+                Package pkg = route.getPackageItem();
+                PackageDTO pkgDTO = new PackageDTO();
+                pkgDTO.setId(pkg.getId());
+                pkgDTO.setReceptor(pkg.getReceptor());
+                pkgDTO.setDepositSector(pkg.getDepositSector());
+                pkgDTO.setWeight(pkg.getWeight());
+                pkgDTO.setHeight(pkg.getHeight());
+                pkgDTO.setLength(pkg.getLength());
+                pkgDTO.setWidth(pkg.getWidth());
+                dto.setPackageDTO(pkgDTO);
+            }
+
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    private List<InProgressRouteDTO> getInProgressRoutesByUser(Long userId) {
+        List<Route> routes = routeRepository.findByAssignedTo_IdAndStatus(userId, Status.IN_PROGRESS);
+        return routes.stream().map(route -> {
+            InProgressRouteDTO dto = new InProgressRouteDTO();
+            dto.setId(route.getId());
+            dto.setAddress(route.getAddress());
+            dto.setZone(route.getZone());
+            dto.setAssignedUser(route.getAssignedTo() != null ? route.getAssignedTo().getName() : null);
+            dto.setStartedAt(route.getStartedAt() != null ? route.getStartedAt().toString() : null);
+            dto.setStatus(route.getStatus().name());
+            return dto;
+        }).collect(Collectors.toList());
     }
 }

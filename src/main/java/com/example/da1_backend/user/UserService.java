@@ -11,11 +11,12 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserDTO getCurrentUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserException(UserException.USER_NOT_FOUND_WITH_ID + userId));
+    public UserDTO getCurrentUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserException("Usuario no encontrado con email: " + email));
         return mapToDTO(user);
     }
+
 
     private UserDTO mapToDTO(User user) {
         return new UserDTO(

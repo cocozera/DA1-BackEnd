@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping("/api/routes")
 public class RouteController {
@@ -17,21 +19,20 @@ public class RouteController {
     @Autowired
     private RouteService routeService;
 
-    // Obtener todas las rutas
     @GetMapping("/")
     public List<RouteDTO> getAllRoutes() {
         return routeService.getAllRoutes();
     }
 
-    // Obtener una ruta con todos sus detalles (solo un paquete asociado)
     @GetMapping("/{routeId}")
     public RouteDetailDTO getRouteDetails(@PathVariable Long routeId) {
         return routeService.getRouteDetails(routeId);
     }
 
+
     @PostMapping("/assign")
-    public ResponseEntity<String> assignUserToRoute(@RequestParam Long routeId, @RequestParam Long userId) {
-        routeService.assignUserToRoute(routeId, userId);
+    public ResponseEntity<String> assignUserToRoute(@RequestParam Long routeId, Principal principal) {
+        routeService.assignUserToRoute(routeId, principal.getName()); // email del usuario
         return ResponseEntity.ok("User assigned to route successfully.");
     }
 
@@ -41,14 +42,16 @@ public class RouteController {
         return ResponseEntity.ok("Route completed successfully.");
     }
 
-    @GetMapping("/{userId}/completed-routes")
-    public List<CompletedRouteDTO> getCompletedRoutes(@PathVariable Long userId) {
-        return routeService.getCompletedRoutesByUser(userId);
+
+    @GetMapping("/completed-routes")
+    public List<CompletedRouteDTO> getCompletedRoutes(Principal principal) {
+        return routeService.getCompletedRoutesByUserEmail(principal.getName());
     }
 
-    @GetMapping("/{userId}/inprogress-routes")
-    public List<InProgressRouteDTO> getInProgressRoutes(@PathVariable Long userId) {
-        return routeService.getInProgressRoutesByUser(userId);
+
+    @GetMapping("/inprogress-routes")
+    public List<InProgressRouteDTO> getInProgressRoutes(Principal principal) {
+        return routeService.getInProgressRoutesByUserEmail(principal.getName());
     }
 
     @PutMapping("/{id}/zone")
@@ -56,5 +59,4 @@ public class RouteController {
         RouteDTO updatedRoute = routeService.updateZone(id, zone);
         return ResponseEntity.ok(updatedRoute);
     }
-
 }
