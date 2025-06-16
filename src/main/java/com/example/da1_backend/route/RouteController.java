@@ -4,10 +4,13 @@ import com.example.da1_backend.route.dto.CompletedRouteDTO;
 import com.example.da1_backend.route.dto.InProgressRouteDTO;
 import com.example.da1_backend.route.dto.RouteDTO;
 import com.example.da1_backend.route.dto.RouteDetailDTO;
+import com.example.da1_backend.util.QrCodeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 import java.security.Principal;
@@ -59,4 +62,16 @@ public class RouteController {
         RouteDTO updatedRoute = routeService.updateZone(id, zone);
         return ResponseEntity.ok(updatedRoute);
     }
+
+    @GetMapping("/{routeId}/qrcode")
+    public ResponseEntity<byte[]> getRouteQr(@PathVariable Long routeId) throws IOException {
+        // Aquí decidís qué codificar: solo el ID, o bien una URL/deep-link
+        String qrContent = String.valueOf(routeId);
+        byte[] png = QrCodeGenerator.generatePng(qrContent);
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(png);
+    }
+
 }
