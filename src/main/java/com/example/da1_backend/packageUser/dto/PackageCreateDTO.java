@@ -14,4 +14,5 @@ public class PackageCreateDTO {
     private Double width;
 
     private String routeAddress;
+    private String zone;
 }

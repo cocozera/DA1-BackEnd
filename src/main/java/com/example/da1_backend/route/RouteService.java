@@ -1,6 +1,7 @@
 package com.example.da1_backend.route;
 
 import com.example.da1_backend.exception.RouteException;
+import com.example.da1_backend.notification.NotificationService;
 import com.example.da1_backend.packageUser.Package;
 import com.example.da1_backend.packageUser.PackageRepository;
 import com.example.da1_backend.packageUser.dto.PackageDTO;
@@ -25,6 +26,10 @@ public class RouteService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
 
     public List<RouteDTO> getAllRoutes() {
         List<Route> routes = routeRepository.findByStatus(Status.PENDING);
@@ -54,6 +59,12 @@ public class RouteService {
         route.setAssignedTo(user);
         route.setStartedAt(LocalDateTime.now());
         route.setStatus(Status.IN_PROGRESS);
+
+        notificationService.createNotification(
+                user.getId(),
+                "Nueva ruta asignada",
+                "Se te asignó una nueva ruta en la zona " + route.getZone()
+        );
 
         routeRepository.save(route);
     }
@@ -112,9 +123,18 @@ public class RouteService {
 
         route.setFinishedAt(LocalDateTime.now());
         route.setStatus(Status.COMPLETED);
-
         routeRepository.save(route);
+
+        // ✅ Notificar al usuario asignado
+        if (route.getAssignedTo() != null) {
+            notificationService.createNotification(
+                    route.getAssignedTo().getId(),
+                    "Ruta completada",
+                    "Has finalizado la ruta en la zona " + route.getZone() + ". ¡Buen trabajo!"
+            );
+        }
     }
+
 
     public RouteDTO updateZone(Long routeId, String newZone) {
         Route route = routeRepository.findById(routeId)
