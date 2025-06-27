@@ -130,7 +130,7 @@ public class RouteService {
             notificationService.createNotification(
                     route.getAssignedTo().getId(),
                     "Ruta completada",
-                    "Has finalizado la ruta en la zona " + route.getZone() + ". ¡Buen trabajo!"
+                    "Has finalizado la ruta en la zona " + route.getZone() + ". ¡Hay rutas pendientes esperandote!"
             );
         }
     }
