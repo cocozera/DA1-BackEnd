@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,10 +61,13 @@ public class RouteService {
         route.setStartedAt(LocalDateTime.now());
         route.setStatus(Status.IN_PROGRESS);
 
+        String code = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        route.setCompletionCode(code);
+
         notificationService.createNotification(
                 user.getId(),
                 "Nueva ruta asignada",
-                "Se te asignó una nueva ruta en la zona " + route.getZone()
+                "Zona: " + route.getZone()
         );
 
         routeRepository.save(route);
@@ -117,24 +121,26 @@ public class RouteService {
     }
 
 
-    public void completeRoute(Long routeId) {
+    public void completeRoute(Long routeId, String code) {
         Route route = routeRepository.findById(routeId)
                 .orElseThrow(() -> new RouteException(RouteException.ROUTE_NOT_FOUND));
+
+        if (!code.equalsIgnoreCase(route.getCompletionCode())) {
+            throw new RouteException("Código de finalización incorrecto.");
+        }
 
         route.setFinishedAt(LocalDateTime.now());
         route.setStatus(Status.COMPLETED);
         routeRepository.save(route);
 
-        // ✅ Notificar al usuario asignado
         if (route.getAssignedTo() != null) {
             notificationService.createNotification(
                     route.getAssignedTo().getId(),
                     "Ruta completada",
-                    "Has finalizado la ruta en la zona " + route.getZone() + ". ¡Buen trabajo!"
+                    "Has finalizado la ruta en la zona " + route.getZone() + ". ¡Te esperan nuevas rutas pendientes!"
             );
         }
     }
-
 
     public RouteDTO updateZone(Long routeId, String newZone) {
         Route route = routeRepository.findById(routeId)

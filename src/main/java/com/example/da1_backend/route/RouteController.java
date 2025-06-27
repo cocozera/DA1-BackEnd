@@ -40,10 +40,14 @@ public class RouteController {
     }
 
     @PostMapping("/complete")
-    public ResponseEntity<String> completeRoute(@RequestParam Long routeId) {
-        routeService.completeRoute(routeId);
+    public ResponseEntity<String> completeRoute(
+            @RequestParam Long routeId,
+            @RequestParam String code
+    ) {
+        routeService.completeRoute(routeId, code);
         return ResponseEntity.ok("Route completed successfully.");
     }
+
 
 
     @GetMapping("/completed-routes")

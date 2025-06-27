@@ -27,6 +27,9 @@ public class Route {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Column(name = "completion_code")
+    private String completionCode;
+
     @JsonManagedReference  // Indica que esta es la referencia "administrada"
     @OneToOne(mappedBy = "route", cascade = CascadeType.ALL)
     private Package packageItem;
