@@ -71,8 +71,7 @@ public class PackageService {
                 notificationService.createNotification(
                         user.getId(),
                         "Nueva ruta pendiente",
-                        "Hay una nueva ruta en la zona " + route.getZone() + " para entregar en " + route.getAddress()
-                );
+                        "Hay una nueva ruta en la zona " + route.getZone());
             }
 
             return newPackage;
